@@ -1,0 +1,145 @@
+.history-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: sticky;
+  top: 1.5rem;
+  max-height: calc(100vh - 3rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.history-header h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.clear-btn {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.clear-btn:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.history-empty {
+  padding: 2rem 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.history-list {
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.history-item {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid rgba(58, 79, 106, 0.35);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item.active {
+  background: var(--accent-soft);
+}
+
+.history-item-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: inherit;
+  transition: background 0.1s;
+  min-width: 0;
+}
+
+.history-item-btn:hover {
+  background: var(--bg-hover);
+}
+
+.history-item.active .history-item-btn:hover {
+  background: rgba(232, 93, 76, 0.2);
+}
+
+.history-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.history-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.history-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-artist {
+  font-size: 0.8rem;
+  color: var(--spanish);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.history-delete {
+  padding: 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: color 0.15s;
+  align-self: center;
+}
+
+.history-delete:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 960px) {
+  .history-panel {
+    position: static;
+    max-height: 400px;
+  }
+}

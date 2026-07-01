@@ -1,0 +1,139 @@
+.lyrics-display {
+  margin-top: 2rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.song-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.song-artwork {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  box-shadow: var(--shadow);
+}
+
+.song-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.song-title {
+  font-family: var(--font-serif);
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+}
+
+.song-artist {
+  color: var(--spanish);
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+
+.song-album {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-top: 0.15rem;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.export-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.export-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.export-btn:active {
+  transform: translateY(0);
+}
+
+.lyrics-legend {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.legend-spanish {
+  color: var(--spanish);
+}
+
+.legend-english {
+  color: var(--english);
+}
+
+.lyrics-body {
+  padding: 2rem 2.5rem 2.5rem;
+}
+
+.lyric-block {
+  margin-bottom: 1.5rem;
+}
+
+.lyric-block:last-child {
+  margin-bottom: 0;
+}
+
+.lyric-spanish {
+  color: var(--spanish);
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.lyric-english {
+  color: var(--english);
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.5;
+  margin-top: 0.15rem;
+  opacity: 0.95;
+}
+
+@media (max-width: 600px) {
+  .song-header {
+    flex-wrap: wrap;
+  }
+
+  .export-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .lyrics-body {
+    padding: 1.5rem;
+  }
+}
