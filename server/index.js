@@ -1,22 +1,34 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { createHash } from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import {
+  initDb,
   getHistory,
   getHistoryItem,
   saveHistory,
   deleteHistoryItem,
   clearHistory,
-} from './db.js';
+  getStorageBackend,
+} from './db/index.js';
 import { searchSongs, getLyricsWithTranslation } from './lyrics.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+function lyricsHash(text) {
+  return createHash('sha256').update(text.trim()).digest('hex').slice(0, 16);
+}
+
 app.use(cors());
 app.use(express.json());
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, storage: getStorageBackend() });
+});
 
 app.get('/api/search', async (req, res) => {
   try {
@@ -40,22 +52,23 @@ app.post('/api/lyrics', async (req, res) => {
     const result = await getLyricsWithTranslation(title, artist);
 
     if (!result.found) {
-      return res.status(404).json({ error: result.message });
+      return res.status(404).json({ error: result.message || 'No lyrics found for this song.' });
     }
 
     let historyEntry = null;
     if (save) {
-      historyEntry = saveHistory({
+      historyEntry = await saveHistory({
         title,
         artist,
         album,
         artworkUrl,
         spanishLyrics: result.spanishLyrics,
         englishLyrics: JSON.stringify(result.pairs),
+        lyricsHash: lyricsHash(result.spanishLyrics),
       });
     }
 
-    res.json({
+    return res.json({
       title,
       artist,
       album,
@@ -64,17 +77,20 @@ app.post('/api/lyrics', async (req, res) => {
       spanishLyrics: result.spanishLyrics,
       pairs: result.pairs,
       historyId: historyEntry?.id || null,
+      fromCache: result.fromCache || false,
     });
   } catch (err) {
     console.error('Lyrics error:', err);
-    res.status(500).json({ error: 'Failed to fetch lyrics' });
+    if (!res.headersSent) {
+      return res.status(500).json({ error: 'Failed to fetch lyrics. Please try again.' });
+    }
   }
 });
 
-app.get('/api/history', (req, res) => {
+app.get('/api/history', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit, 10) || 50;
-    const items = getHistory(limit).map((item) => ({
+    const items = (await getHistory(limit)).map((item) => ({
       ...item,
       pairs: JSON.parse(item.english_lyrics),
       english_lyrics: undefined,
@@ -87,9 +103,9 @@ app.get('/api/history', (req, res) => {
   }
 });
 
-app.get('/api/history/:id', (req, res) => {
+app.get('/api/history/:id', async (req, res) => {
   try {
-    const item = getHistoryItem(parseInt(req.params.id, 10));
+    const item = await getHistoryItem(parseInt(req.params.id, 10));
     if (!item) return res.status(404).json({ error: 'Not found' });
 
     res.json({
@@ -104,18 +120,18 @@ app.get('/api/history/:id', (req, res) => {
   }
 });
 
-app.delete('/api/history/:id', (req, res) => {
+app.delete('/api/history/:id', async (req, res) => {
   try {
-    deleteHistoryItem(parseInt(req.params.id, 10));
+    await deleteHistoryItem(parseInt(req.params.id, 10));
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to delete' });
   }
 });
 
-app.delete('/api/history', (req, res) => {
+app.delete('/api/history', async (req, res) => {
   try {
-    clearHistory();
+    await clearHistory();
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to clear history' });
@@ -124,13 +140,34 @@ app.delete('/api/history', (req, res) => {
 
 const distPath = join(__dirname, '..', 'dist');
 app.use(express.static(distPath));
+
+app.use('/api', (_req, res) => {
+  res.status(404).json({ error: 'API route not found' });
+});
+
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) return next();
   res.sendFile(join(distPath, 'index.html'), (err) => {
     if (err) next();
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Lyrica server running on http://localhost:${PORT}`);
+app.use((err, _req, res, _next) => {
+  console.error('Unhandled error:', err);
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
+
+async function start() {
+  try {
+    await initDb();
+    app.listen(PORT, () => {
+      console.log(`Lyrica server running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
+  }
+}
+
+start();

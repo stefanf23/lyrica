@@ -89,8 +89,8 @@ function measureHeaderEndY(doc, title, artist, album, config) {
     y += config.albumSize * 0.45 + 8;
   }
 
-  y += 12 + 16; // divider spacing
-  y += 14; // legend
+  y += 12 + 16;
+  y += 14;
 
   return y;
 }
@@ -147,7 +147,6 @@ function chooseConfig(doc, title, artist, album, pairs) {
     return defaultConfig;
   }
 
-  // Binary search for the lightest compression that fits on one page
   let lo = 0.72;
   let hi = 1.0;
   let best = defaultConfig;

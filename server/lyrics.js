@@ -1,3 +1,6 @@
+import { createHash } from 'crypto';
+import { findCachedLyrics } from './db/index.js';
+
 const LRCLIB_BASE = 'https://lrclib.net/api';
 
 export async function searchSongs(query) {
@@ -140,10 +143,31 @@ export async function translateLyrics(spanishLyrics) {
   }));
 }
 
+function lyricsHash(text) {
+  return createHash('sha256').update(text.trim()).digest('hex').slice(0, 16);
+}
+
 export async function getLyricsWithTranslation(title, artist) {
   const lyricsResult = await fetchLyrics(title, artist);
   if (!lyricsResult) {
     return { found: false, message: 'No lyrics found for this song.' };
+  }
+
+  const hash = lyricsHash(lyricsResult.lyrics);
+  const cached = await findCachedLyrics(title, artist, hash);
+
+  if (cached?.english_lyrics) {
+    try {
+      return {
+        found: true,
+        source: lyricsResult.source,
+        spanishLyrics: lyricsResult.lyrics,
+        pairs: JSON.parse(cached.english_lyrics),
+        fromCache: true,
+      };
+    } catch {
+      /* corrupted cache — re-translate */
+    }
   }
 
   const pairs = await translateLyrics(lyricsResult.lyrics);
@@ -153,5 +177,6 @@ export async function getLyricsWithTranslation(title, artist) {
     source: lyricsResult.source,
     spanishLyrics: lyricsResult.lyrics,
     pairs,
+    fromCache: false,
   };
 }
